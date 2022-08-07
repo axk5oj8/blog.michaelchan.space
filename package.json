@@ -35,7 +35,7 @@
     "@visx/scale": "^2.2.2",
     "@visx/shape": "^2.12.2",
     "@visx/tooltip": "^2.10.0",
-    "chalk": "^4.1.1",
+    "chalk": "^5.0.1",
     "d3-array": "^3.2.0",
     "date-fns": "^2.29.1",
     "detect-gpu": "^4.0.33",
