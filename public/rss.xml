@@ -9,14 +9,14 @@
             <link>https://blog.michaelchan.space</link>
         </image>
         <generator>RSS for Node</generator>
-        <lastBuildDate>Sat, 06 Aug 2022 16:19:21 GMT</lastBuildDate>
+        <lastBuildDate>Sat, 06 Aug 2022 19:22:37 GMT</lastBuildDate>
         <atom:link href="https://blog.michaelchan.space/rss.xml" rel="self" type="application/rss+xml"/>
         <language><![CDATA[en]]></language>
         <item>
-            <title><![CDATA[Advanced animation patterns with Framer Motion]]></title>
-            <description><![CDATA[A deep dive into Framer Motion's propagation, exit transitions and layout animation patterns through curated examples and interactive playgrounds.]]></description>
-            <link>https://blog.michaelchan.space/posts/advanced-animation-patterns-with-framer-motion</link>
-            <guid isPermaLink="false">https://blog.michaelchan.space/posts/advanced-animation-patterns-with-framer-motion</guid>
+            <title><![CDATA[Hello World]]></title>
+            <description><![CDATA[My first blog]]></description>
+            <link>https://blog.michaelchan.space/posts/hello-world</link>
+            <guid isPermaLink="false">https://blog.michaelchan.space/posts/hello-world</guid>
             <dc:creator><![CDATA[Michael Chan]]></dc:creator>
             <pubDate>Tue, 20 Apr 2021 08:00:00 GMT</pubDate>
         </item>

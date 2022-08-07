@@ -1,3 +1,5 @@
+import Box from '@theme/components/Box';
+import Comments from '@theme/components/Comments';
 import MDXComponents from '@theme/components/MDX/MDXComponents';
 import Tweet from '@theme/components/Tweet';
 import BlogLayout from 'layouts/BlogPost';
@@ -7,6 +9,7 @@ import { getTweets } from 'lib/tweets';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import { MDXRemote } from 'next-mdx-remote';
 import { useRouter } from 'next/router';
+import { useInView } from 'react-intersection-observer';
 import { FrontMatterPost, PostType } from 'types/post';
 
 interface BlogProps {
@@ -17,6 +20,12 @@ interface BlogProps {
 
 const Blog = ({ post, ogImage, tweets }: BlogProps) => {
   const { isFallback } = useRouter();
+
+  const { ref, inView } = useInView({
+    rootMargin: '140px',
+    threshold: 0,
+    fallbackInView: true,
+  });
 
   if (isFallback || !post) {
     return <div>Loading...</div>;
@@ -33,6 +42,9 @@ const Blog = ({ post, ogImage, tweets }: BlogProps) => {
         // @ts-ignore
         components={{ ...MDXComponents, StaticTweet: StaticTweet }}
       />
+      <Box id="comments" ref={ref}>
+        {inView && <Comments title={post.frontMatter.title} />}
+      </Box>
     </BlogLayout>
   );
 };

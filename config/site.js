@@ -28,4 +28,11 @@ module.exports = {
   themeColor: '#000000',
   backgroundColor: '#ffffff',
   twitter: '@axk5oj8', // Twitter Username
+  giscusConfig: {
+    // https://github.com/giscus/giscus-component/tree/main/packages/react#readme
+    repo: 'axk5oj8/blog.michaelchan.space',
+    repoId: 'R_kgDOHx1-7A',
+    category: 'Comments',
+    categoryId: 'DIC_kwDOHx1-7M4CQqVG',
+  },
 };

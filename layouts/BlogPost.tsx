@@ -1,12 +1,10 @@
 import { format } from 'date-fns';
 import Link from 'next/link';
 import React from 'react';
-import siteConfig from 'config/site';
 import Layout from '@theme/layout';
 import TableOfContent from '@theme/components/TableOfContent';
 import Seo from '@theme/components/Seo';
 import Hero from '@theme/components/Hero';
-import WebmentionCount from '@theme/components/Webmentions/WebmentionCount';
 import { Post, ReadingTime } from 'types/post';
 import { css } from 'lib/stitches.config';
 import Grid from '@theme/components/Grid';
@@ -15,29 +13,6 @@ import Flex from '@theme/components/Flex';
 import { Text } from '@theme/components/Typography';
 import Anchor from '@theme/components/Anchor';
 import Pill from '@theme/components/Pill';
-
-interface WebmentionBlogDataProps {
-  date: string;
-  postUrl: string;
-  subtitle?: string;
-}
-
-const WebmentionBlogData = (props: WebmentionBlogDataProps) => {
-  const { date, postUrl, subtitle } = props;
-  return (
-    <>
-      <time
-        className="hidden dt-published"
-        itemProp="datepublished"
-        dateTime={date}
-      >
-        {new Date(date).toISOString().replace('Z', '') + '+01:00'}
-      </time>
-      <a className="hidden u-url" href={postUrl} />
-      {subtitle && <p className="hidden p-summary e-content">{subtitle}</p>}
-    </>
-  );
-};
 
 interface Props {
   children: React.ReactNode;
@@ -60,10 +35,9 @@ const contentClass = css({
 });
 
 const BlogLayout = ({ children, frontMatter, ogImage }: Props) => {
-  const { date, updated, slug, subtitle, title, readingTime, cover } =
+  const { date, updated, slug, keywords, subtitle, title, readingTime, cover } =
     frontMatter;
   const path = `/posts/${slug}/`;
-  const postUrl = `${siteConfig.url}${path}`;
 
   const headerProps = {
     title,
@@ -129,9 +103,32 @@ const BlogLayout = ({ children, frontMatter, ogImage }: Props) => {
                   css={{ marginBottom: '0px' }}
                 >
                   {format(new Date(Date.parse(date)), 'MMMM d, yyyy')} /{' '}
-                  {readingTime.text} /
+                  {readingTime.text}
                 </Text>
-                <WebmentionCount target={postUrl} />
+                {keywords?.map((k) => (
+                  <>
+                    <Text
+                      as="p"
+                      size="1"
+                      variant="tertiary"
+                      weight="3"
+                      css={{ marginBottom: '0px' }}
+                      key={`slash${k}`}
+                    >
+                      /
+                    </Text>
+                    <Text
+                      as="p"
+                      size="1"
+                      weight="3"
+                      variant="info"
+                      css={{ marginBottom: 0 }}
+                      key={k}
+                    >
+                      {k}
+                    </Text>
+                  </>
+                ))}
               </Flex>
               <Flex
                 css={{
@@ -149,7 +146,6 @@ const BlogLayout = ({ children, frontMatter, ogImage }: Props) => {
           <TableOfContent ids={ids} />
           <Box className={contentClass()}>{children}</Box>
         </Grid>
-        <WebmentionBlogData date={date} postUrl={postUrl} subtitle={subtitle} />
       </article>
     </Layout>
   );

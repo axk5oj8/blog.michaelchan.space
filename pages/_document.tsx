@@ -86,14 +86,6 @@ class MyDocument extends Document {
           <link rel="manifest" href="/static/favicons/site.webmanifest" />
           <link rel="mask-icon" href="/static/favicons/safari-pinned-tab.svg" />
           <link rel="alternate" type="application/rss+xml" href="/rss.xml" />
-          <link
-            rel="webmention"
-            href="https://webmention.io/blog.MichaelChan.com/webmention"
-          />
-          <link
-            rel="pingback"
-            href="https://webmention.io/blog.MichaelChan.com/xmlrpc"
-          />
           <style
             id="stitches"
             dangerouslySetInnerHTML={{ __html: getCssText() }}
