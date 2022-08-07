@@ -38,7 +38,7 @@
     "chalk": "^4.1.1",
     "d3-array": "^3.2.0",
     "date-fns": "^2.29.1",
-    "detect-gpu": "^4.0.33",
+    "detect-gpu": "^4.0.34",
     "focus-trap-react": "^9.0.2",
     "framer-motion": "^6.5.1",
     "graphql": "^16.5.0",
