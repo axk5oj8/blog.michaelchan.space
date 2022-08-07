@@ -20,4 +20,4 @@
     camera=(),
     microphone=(),
     geolocation=()'''
-    Content-Security-Policy = "default-src 'self';  script-src 'self' 'unsafe-eval' 'unsafe-inline' *.youtube.com *.twitter.com *.netlify.app *.netlify.com; child-src *.youtube.com *.google.com *.twitter.com *.netlify.app *.netlify.com *.codesandbox.io *.giscus.app; style-src 'self' 'unsafe-inline' *.googleapis.com; img-src * blob: data:; frame-src 'self' *.giscus.app; media-src 'self' cdn.plyr.io; connect-src *; font-src 'self'"
+    Content-Security-Policy = "default-src 'self';  script-src 'self' 'unsafe-eval' 'unsafe-inline' *.youtube.com *.twitter.com *.netlify.app *.netlify.com; child-src *.youtube.com *.google.com *.twitter.com *.netlify.app *.netlify.com *.codesandbox.io giscus.app; style-src 'self' 'unsafe-inline' *.googleapis.com; img-src * blob: data:; frame-src 'self' giscus.app; media-src 'self' cdn.plyr.io; connect-src *; font-src 'self'"
