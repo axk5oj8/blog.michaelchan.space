@@ -71,7 +71,7 @@
     "@netlify/plugin-nextjs": "^4.14.1",
     "@next/bundle-analyzer": "^12.2.4",
     "@types/d3-array": "^3.0.3",
-    "@types/node": "18.6.0",
+    "@types/node": "18.6.4",
     "@types/qs": "^6.9.7",
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
