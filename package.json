@@ -11,7 +11,7 @@
   },
   "scripts": {
     "dev": "cross-env NODE_OPTIONS='--inspect' next dev",
-    "build": "next build && next export",
+    "build": "next build",
     "start": "next start",
     "format": "prettier --write \"./**/*.{js,jsx,ts,tsx}\"",
     "generate:index": "node ./scripts/generate-index",
