@@ -11,7 +11,7 @@
   },
   "scripts": {
     "dev": "cross-env NODE_OPTIONS='--inspect' next dev",
-    "build": "next build",
+    "build": "next build & next export",
     "start": "next start",
     "format": "prettier --write \"./**/*.{js,jsx,ts,tsx}\"",
     "generate:index": "node ./scripts/generate-index",
@@ -68,6 +68,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.18.10",
+    "@cloudflare/next-on-pages": "^0.1.0",
     "@netlify/plugin-nextjs": "^4.14.1",
     "@next/bundle-analyzer": "^12.2.4",
     "@types/d3-array": "^3.0.3",
