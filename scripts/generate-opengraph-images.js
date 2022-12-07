@@ -61,7 +61,7 @@ const ogImageDir = `./public/static/og`;
       };
     }, {});
 
-    const url = `https://og.image.michaelchan.space/ogimage?${qs.stringify(
+    const url = `https://og.michaelchan.space/ogimage?${qs.stringify(
       filteredParams
     )}`;
 

@@ -20,7 +20,9 @@
   </url>
 
   <url>
-    <loc>https://blog.michaelchan.space/posts/hello-world/</loc>
+    <loc
+      >https://blog.michaelchan.space/posts/pv-pvc-storageclass-what-exactly-are-these-talking-about/</loc
+    >
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>

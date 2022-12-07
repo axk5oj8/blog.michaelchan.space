@@ -106,14 +106,13 @@ const BlogLayout = ({ children, frontMatter, ogImage }: Props) => {
                   {readingTime.text}
                 </Text>
                 {keywords?.map((k) => (
-                  <>
+                  <React.Fragment key={k}>
                     <Text
                       as="p"
                       size="1"
                       variant="tertiary"
                       weight="3"
                       css={{ marginBottom: '0px' }}
-                      key={`slash${k}`}
                     >
                       /
                     </Text>
@@ -123,11 +122,10 @@ const BlogLayout = ({ children, frontMatter, ogImage }: Props) => {
                       weight="3"
                       variant="info"
                       css={{ marginBottom: 0 }}
-                      key={k}
                     >
                       {k}
                     </Text>
-                  </>
+                  </React.Fragment>
                 ))}
               </Flex>
               <Flex

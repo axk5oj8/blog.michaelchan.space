@@ -27,7 +27,7 @@ const Comments = ({ title, ...rest }: CommentsProps) => {
         mapping="specific"
         reactionsEnabled="1"
         emitMetadata="0"
-        theme={dark ? 'dark' : 'light'}
+        theme="https://github.com/axk5oj8/blog.michaelchan.space/blob/main/styles/giscus.css"
       />
     </Wrapper>
   );

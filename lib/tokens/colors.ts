@@ -1,7 +1,7 @@
 export const palette = {
   /* Gray scale */
   '--base-hue-gray': '223',
-  '--base-gray': 'var(--base-hue-gray), 15%',
+  '--base-gray': '223, 15%',
   '--palette-gray-00': 'var(--base-gray), 100%',
   '--palette-gray-01': 'var(--base-gray), 99%',
   '--palette-gray-01-5': 'var(--base-gray), 98.5%',
@@ -35,7 +35,7 @@ export const palette = {
   /* Blue scale */
   '--base-hue': '222',
   '--base-saturation': '89',
-  '--base-blue': 'var(--base-hue), calc(var(--base-saturation) * 1%)',
+  '--base-blue': '222, 89%',
   '--palette-blue-00': 'var(--base-blue), 100%',
   '--palette-blue-05': 'var(--base-blue), 95%',
   '--palette-blue-10': 'var(--base-blue), 90%',

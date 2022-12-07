@@ -1,0 +1,273 @@
+---
+title: 'PV, PVC, StorageClass, what exactly are these talking about?'
+subtitle: 'An introduce to PersistentVolume, PersistentVolumeClaim, StorageClass'
+date: '2021-04-20T08:00:00.000Z'
+updated: '2021-05-02T08:00:00.000Z'
+categories: []
+keywords: ['k8s', 'PersistentVolume']
+slug: pv-pvc-storageclass-what-exactly-are-these-talking-about
+type: 'blogPost'
+---
+
+Persistent storage is a critical component of containerized applications in Kubernetes, but it can also be one of the most challenging aspects to manage. In this series of four posts, we will explore the core principles of how Kubernetes handles persistent storage and provide practical tips for using this functionality in your own projects. By the end of this series, **you will have a deep understanding of how persistent volumes work in Kubernetes and be able to confidently use this feature to manage the storage state of your applications.**
+
+## What are PV and PVC?
+
+The PersistentVolume subsystem in Kubernetes provides a set of APIs that allow users and administrators to manage the storage resources used by their applications. This subsystem introduces two new API resources: `PersistentVolume` (PV) and `PersistentVolumeClaim` (PVC).
+
+**A PV object represents a piece of storage that has been provisioned for use in a Kubernetes cluster.** This storage can be located on a local disk, on a network attached storage (NAS) device, or on a cloud-based storage service. The PV object defines the properties of the storage, such as its capacity, access modes, and mount options. PVs are typically created and managed by the cluster's operations team, which can be dynamically provisioned or statically provisioned in advance. A PV of type NFS can be defined as follows:
+
+```yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.244.1.4
+    path: "/"
+```
+
+A PVC object represents a request for storage by a user. **It specifies the desired properties of the storage, such as the capacity and access modes, and it is bound to a PV that satisfies those requirements.** PVCs are created and managed by the users of the cluster, and they are used to access the storage provided by the PVs. A PVC object of 1 GiB size can be declared as follows:
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: manual
+  resources:
+    requests:
+      storage: 1Gi
+```
+
+Together, the PV and PVC objects form a contract that defines how storage is allocated and used in the cluster. The PV provides the actual storage, and the PVC represents a claim on that storage by a user. This abstraction allows users to use storage without having to worry about the underlying details of how it is provisioned and managed.
+
+## How is a PVC object bound to a PV?
+
+For a PVC to be used by a container, it must first be bound to a PV that satisfies its requirements. The binding process checks two conditions: **the spec fields of the PV and PVC must match, and the `storageClassName` field of both must be the same.** If these conditions are met, the PV and PVC can be bound to each other.
+
+For example, let's say we have a PVC named `my-pvc` that specifies a storage size of 1GB and a `storageClassName` of `standard`. If there is a PV named `my-pv` that has a capacity of 1GB, an `accessMode` of `ReadWriteOnce`, and a `storageClassName` of `standard`, then these two objects can be bound to each other. Once the binding is complete, the name of the PV (`my-pv`) will be stored in the `spec.volumeName` field of the PVC, so that Kubernetes knows which PV to use when mounting the volume for the container.
+
+After successfully binding the PVC to the PV, we can declare the use of this PVC in the YAML file of the Pod, just as we would with a regular type of Volume such as hostPath, as follows:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    role: web-frontend
+spec:
+  containers:
+  - name: web
+    image: nginx
+    ports:
+      - name: web
+        containerPort: 80
+    volumeMounts:
+        - name: nfs
+          mountPath: "/usr/share/nginx/html"
+  volumes:
+  - name: nfs
+    persistentVolumeClaim:
+      claimName: nfs
+```
+
+
+
+As you can see, all we need to do is declare the name of the PVC we want to use in the volumes field. Next, once the Pod is created, the kubelet will mount the PV corresponding to this PVC, an NFS type Volume, on a directory inside the Pod container.
+
+To ensure that PVCs are bound to PVs as soon as they become available, Kubernetes has a controller called the PersistentVolumeController. This controller maintains a control loop called the `PersistentVolumeBindingController` that constantly checks each PVC to see if it is already bound to a PV. If a PVC is not bound, the controller iterates through all available PVs and tries to bind them to the PVC. This process continues until all PVCs are bound to a PV or there are no more available PVs.
+
+Here is an example of how this process works in practice. Suppose we have a Pod that defines a PVC named `my-pvc`, but there is no PV available in the system that matches the requirements of the PVC. When the Pod is created, it will fail to start because it cannot find a suitable PV to use for its storage. After a while, the operations team notices this issue and creates a PV named `my-pv` that satisfies the requirements of `my-pvc`. At this point, the PersistentVolumeBindingController will detect that `my-pvc` is unbound and try to bind it to `my-pv`. If the binding is successful, the Pod will be able to start and use the storage provided by `my-pv`.
+
+In summary, the PVC and PV objects in Kubernetes provide a flexible and abstract way to manage persistent storage for containers. The PVC represents a request for storage by a user, and the PV provides the actual storage that satisfies that request. The PersistentVolumeBindingController ensures that PVCs are bound to PVs as soon as they become available, so that containers can access the storage they need to run.
+
+## How does a PV object enable persistent storage in a Kubernetes container?
+
+A volume of a container is actually a directory on a host that is bound and mounted to a directory in a container. The so-called "persistent Volume" refers to the directory on the host, which has the characteristic of "persistence". That is, the content in this directory will not be cleaned up due to the deletion of the container, nor will it be bound to the current host. In this way, when the container is restarted or rebuilt on other nodes, it can still access these contents through mounting this Volume. Obviously, the hostPath and emptyDir types of Volume that we used earlier do not have this feature: they can be cleared by kubelet and cannot be "migrated" to other nodes. Therefore, in most cases, the implementation of persistent Volume depends on a remote storage service, such as remote file storage (for example, NFS, GlusterFS), remote block storage (for example, remote disks provided by public clouds), etc.
+
+Kubernetes's job is to use these storage services to prepare a persistent host directory for containers for future binding and mounting. The so-called "persistence" refers to the files written in this directory by the container, which will be saved in the remote storage, thus making this directory "persistent". The process of preparing the "persistent" host directory can be metaphorically called **two-stage processing**.
+
+Next, I will explain it to you with a specific example.
+
+When a Pod is scheduled to a node, kubelet is responsible for preparing a persistent host directory for the container in this Pod. By default, the directory created by kubelet for volume is a path on the host as follows:
+
+```
+/var/lib/kubelet/pods/<Pod ID>/volumes/kubernetes.io~<Volume type>/<Volume name>
+```
+
+The following action that kubelet has to do depends on your Volume type. If your Volume type is remote block storage, such as Google Cloud's Persistent Disk (a remote disk service provided by GCE), then the kubelet will need to first call the Goolge Cloud API to mount the Persistent Disk it provides to the host where the Pod resides.
+
+<Callout variant="info">
+If you don't know much about block storage, you can just think of it as: a disk.
+</Callout>
+
+It is equivalent to executing the following command:
+
+```shell
+$ gcloud compute instances attach-disk <virtual machine name> --disk <remote disk name>
+```
+
+This step of mounting a remote disk for a virtual machine corresponds to the first stage of "two-stage processing". In Kubernetes, we refer to this stage as `Attach`.
+
+Once the Attach stage is completed, in order to use the remote disk, the kubelet has to perform a second operation, i.e., format the disk device and mount it on the mount point specified by the host. It is easy to understand that this mount point is the host directory of Volume, which I mentioned repeatedly earlier. So, this step is equivalent to performing:
+
+```shell
+# excute lsblk to get disk device'ID
+$ sudo lsblk
+# format to ext4
+$ sudo mkfs.ext4 -m 0 -F -E lazy_itable_init=0,lazy_journal_init=0,discard /dev/<disk's ID>
+# mount it on the mount point
+$ sudo mkdir -p /var/lib/kubelet/pods/<Pod ID>/volumes/kubernetes.io~<Volume type>/<Volume name>
+```
+
+This operation of formatting and mounting the disk device to the Volume host directory corresponds to the second stage of the "two-stage process", which we generally refer to as `Mount`.
+
+After the Mount stage is completed, the host directory of this Volume becomes a "persistent" directory, meaning that any content written by the container in it will be saved on Google Cloud's remote disk.
+
+If your Volume type is a remote file storage system such as NFS, the processing process of kubelet will be simpler. In this case, kubelet can skip the "first stage" (Attach) operation, since remote file storage typically does not require a physical storage device to be mounted on the host.
+
+Instead, kubelet will directly proceed to the "second stage" (Mount), where it will prepare the Volume directory on the host. At this point, kubelet will act as a client, and mount the remote NFS server's directory (e.g. the "/" directory) onto the host directory of the Volume. This is equivalent to executing the following command:
+```shell
+$ mount -t nfs <NFS server address>:/ /var/lib/kubelet/pods/<Pod ID>/volumes/kubernetes.io~<Volume type>/<Volume name>
+
+```
+
+Through this mounting operation, the host directory of the Volume becomes a mounted point for the remote NFS directory. Any files written in this directory will be saved on the remote NFS server, providing persistence for the Volume.
+
+<Callout variant="waring">
+
+You may ask, how does Kubernetes define and distinguish between Attach and Mount?
+
+</Callout>
+
+The actual implementation is very simple. In the specific Volume plugin interface, Kubernetes provides two different parameter lists for these two stages:
+
+- For the Attach stage, the available parameter provided by Kubernetes is `nodeName`, which is the name of the host.
+- For the Mount stage, the available parameter provided by Kubernetes is `dir`, which is the host directory of the Volume.
+
+You just need to choose and implement the appropriate parameters based on your needs when you implement your own storage plugin.
+
+Once the PV has gone through the Attach and Mount stages, it becomes a "persistent" Volume on the host node. Kubelet then uses the Mounts parameter in the Container Runtime Interface (CRI) to pass this Volume to Docker, which mounts it to the specified directory in the container. This is equivalent to running the following command:
+
+```shell
+$ docker run -v /var/lib/kubelet/pods/<Pod ID>/volumes/kubernetes.io~<Volume type>/<Volume name>:/<target directory inside container> my image ...
+
+```
+
+<Callout variant="info">
+
+Similarly, when deleting a PV, Kubernetes also requires two stages: Unmount and Detach. I will not go into further detail about this process here, but it involves performing the reverse operations of the Attach and Mount.
+
+</Callout>
+
+In fact, you may have noticed that the PV processing flow does not seem to be closely coupled with the Pod and container startup flow. As long as kubelet ensures that the "persistent" host directory is processed before sending a CRI request to Docker, everything is fine.
+
+Therefore, in Kubernetes, the above "two-stages processing" process for PV is implemented by **two control loops independent of the kubelet main control loop (Kubelet Sync Loop).**
+
+The Attach (and Detach) operation of the "first stage" is maintained by the Volume Controller. The name of this control loop is `AttachDetachController`. Its function is to constantly check the attachment status between the PV corresponding to each Pod and the host where the Pod is located, and then decide whether to Attach (or Detach) the PV.
+
+It should be noted that as a built-in controller in Kubernetes, the Volume Controller is naturally part of `kube-controller-manager`. Therefore, AttachDetachController must also run on the Master node. Of course, the Attach operation only needs to call the API of the public cloud or specific storage project, and does not require any operations on the specific host, so there is no problem with this design.
+
+The Mount (and Unmount) operation of the "second stage" must occur on the host where the Pod is located, so it must be part of the kubelet component. The name of this control loop is `VolumeManagerReconciler`. After it is running, it is a Goroutine independent of the kubelet main loop.
+
+By decoupling the Volume processing from the kubelet main loop in this way, Kubernetes avoids the problem of the time-consuming remote mounting operation slowing down the kubelet main control loop and causing a significant decrease in Pod creation efficiency. In practice, this design can greatly improve the efficiency and stability of Kubernetes PV processing.
+
+## What is StorageClass?
+
+When I introduced PV and PVC earlier, I mentioned that PV objects are created by operations personnel. However, in a large-scale production environment, this is actually a very troublesome job. This is because a large-scale Kubernetes cluster may have tens of thousands of PVCs, which means that operations personnel must pre-create tens of thousands of PVs. What's more, as new PVCs are submitted, operations personnel must continue to add new PVs that meet the conditions, otherwise, new Pods will fail to bind to PV and fail. In practice, it is almost impossible for this to be done manually.
+
+Therefore, Kubernetes provides us with a mechanism for automatically creating PVs, called `Dynamic Provisioning`. In contrast, the previous manual PV management method is called `Static Provisioning`.
+
+The core of the Dynamic Provisioning mechanism is an API object called `StorageClass`. The purpose of the StorageClass object is to create a template for PV. Specifically, the StorageClass object defines the following two parts:
+
+1. The properties of PV. For example, storage type, Volume size, etc.
+
+2. The storage plugin required to create this PV. For example, Ceph, etc. 
+
+With this information, Kubernetes can find a corresponding StorageClass based on the user-submitted PVC. Then, Kubernetes will call the storage plugin declared by the StorageClass to create the required PV.
+
+For example, if our Volume type is GCE's Persistent Disk, the operations personnel need to define a StorageClass object that looks like this:
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: block-service
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-ssd
+```
+
+In this YAML file, we define a StorageClass called block-service. The value of the provisioner field for this StorageClass is kubernetes.io/gce-pd, which is the name of the built-in GCE PD storage plugin for Kubernetes. The parameters field of this StorageClass specifies the parameters for the PV. For example, the type=pd-ssd in the above example indicates that the PV type is "SSD-formatted GCE remote disk".
+
+Note that because GCE Persistent Disk is required, this example can only be implemented in the Kubernetes service provided by GCE. If you want to use the Kubernetes cluster and Rook storage service deployed locally earlier, your StorageClass needs to be defined using the following YAML file:
+
+```yaml
+apiVersion: ceph.rook.io/v1beta1
+kind: Pool
+metadata:
+  name: replicapool
+  namespace: rook-ceph
+spec:
+  replicated:
+    size: 3
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: block-service
+provisioner: ceph.rook.io/block
+parameters:
+  pool: replicapool
+  #The value of "clusterNamespace" MUST be the same as the one in which your rook cluster exist
+  clusterNamespace: rook-ceph
+```
+
+In this YAML file, we still define a StorageClass called block-service, but it declares that the storage plugin is provided by the Rook project.
+
+With the YAML file for the StorageClass, the operations team can create the StorageClass in Kubernetes:
+
+```shell
+$ kubectl create -f sc.yaml
+```
+
+At this point, what we need to do is just specifying the SotrageClass' name in the PVC:
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: claim1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: block-service
+  resources:
+    requests:
+      storage: 30Gi
+```
+
+As you can see, we added a field called storageClassName to this PVC to specify that the name of the StorageClass to be used by this PVC is block-service.
+
+## Summary
+
+In this article, I explain to you in detail the design and implementation principles of PVC and PV, and explain to you what StorageClass is for. The relationship between these concepts can be described with the following diagram:
+
+<Image src="blog/pv-pvc_cldtiu.png" alt="The relationship between PV, PVC, StorageClass & Provisioner" layout="responsive" width={900}
+  height={606}/>
+
+In this system, we can see from the figure that:
+
++ PVC describes the properties of the persistent storage that the Pod wants to use, such as the size of the storage and the read-write permissions.
++ PV describes the attributes of a specific Volume, such as the type of Volume, the mount directory, and the address of the remote storage server.
++ The role of StorageClass is to act as a template for PV. Furthermore, only PV and PVC belonging to the same StorageClass can be bound together.

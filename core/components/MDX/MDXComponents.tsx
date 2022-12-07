@@ -24,7 +24,7 @@ const MDXComponents = {
   h2: H2,
   h3: H3,
   Image,
-  inlineCode: InlineCode,
+  code: InlineCode,
   li: List.Item,
   ol: (props: React.OlHTMLAttributes<HTMLOListElement>) => (
     <List variant="ordered" {...props} />
