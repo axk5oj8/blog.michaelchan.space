@@ -18,6 +18,8 @@ export type CommentsProps = ComponentProps<typeof Wrapper> & {
 
 const Comments = ({ title, ...rest }: CommentsProps) => {
   const { dark } = useTheme();
+  const themeSuffix = dark ? '-dark' : '-light'
+  const themeUrl = `https://github.com/axk5oj8/blog.michaelchan.space/blob/main/styles/giscus${themeSuffix}.css`;
 
   return (
     <Wrapper {...rest}>
@@ -27,7 +29,7 @@ const Comments = ({ title, ...rest }: CommentsProps) => {
         mapping="specific"
         reactionsEnabled="1"
         emitMetadata="0"
-        theme="https://github.com/axk5oj8/blog.michaelchan.space/blob/main/styles/giscus.css"
+        theme={themeUrl}
       />
     </Wrapper>
   );
