@@ -12,6 +12,7 @@
   for = "/*"
   [headers.values]
     Referrer-Policy = "origin-when-cross-origin"
+    Access-Control-Allow-Origin = "*"
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     X-DNS-Prefetch-Control = "on"
