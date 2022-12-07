@@ -18,8 +18,12 @@ export type CommentsProps = ComponentProps<typeof Wrapper> & {
 
 const Comments = ({ title, ...rest }: CommentsProps) => {
   const { dark } = useTheme();
-  const themeSuffix = dark ? '-dark' : '-light'
-  const themeUrl = `https://github.com/axk5oj8/blog.michaelchan.space/blob/main/styles/giscus${themeSuffix}.css`;
+  const themeSuffix = dark ? '-dark' : '-light';
+  // check env
+  const themeUrl =
+    process.env.NODE_ENV === 'development'
+      ? `http://localhost:3000/static/giscus${themeSuffix}.css`
+      : `${location.protocol}//${location.host}/static/giscus${themeSuffix}.css`;
 
   return (
     <Wrapper {...rest}>

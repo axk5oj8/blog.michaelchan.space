@@ -68,7 +68,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.18.10",
-    "@netlify/plugin-nextjs": "^4.14.1",
+    "@netlify/plugin-nextjs": "^4.29.2",
     "@next/bundle-analyzer": "^12.2.4",
     "@types/d3-array": "^3.0.3",
     "@types/node": "18.6.0",
